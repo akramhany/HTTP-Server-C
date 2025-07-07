@@ -1,0 +1,3 @@
+/home/akramhany/Akram/Projects/HTTP-Server-C/HTTP-Server-C/build/CMakeFiles/http-server.dir
+/home/akramhany/Akram/Projects/HTTP-Server-C/HTTP-Server-C/build/CMakeFiles/edit_cache.dir
+/home/akramhany/Akram/Projects/HTTP-Server-C/HTTP-Server-C/build/CMakeFiles/rebuild_cache.dir
