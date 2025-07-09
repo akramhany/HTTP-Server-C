@@ -1,8 +1,9 @@
 #include "defines.h"
+#include "response.h"
 #include "utils.h"
 
 int main(int argc, char *argv[]) {
-  int server_fd, client_addr_len, new_server_fd;
+  int server_fd, client_addr_len, new_server_fd, port_no;
   struct sockaddr_in client_addr;
 
   if (argc != 2) {
@@ -25,9 +26,11 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
+  port_no = atoi(argv[1]);
+
   struct sockaddr_in serv_addr = {
       .sin_family = AF_INET,
-      .sin_port = htons(4221),
+      .sin_port = htons(port_no),
       .sin_addr = {htonl(INADDR_ANY)},
   };
 
@@ -49,10 +52,14 @@ int main(int argc, char *argv[]) {
       accept(server_fd, (struct sockaddr *)&client_addr, &client_addr_len);
   printf("Client connected\n");
 
-  const char *msg = "Hello from the server, how are you doing?\n";
+  Response *response = response_constructor("HTTP/1.1 200 OK", "", "");
+  char msg[MAX_BUFFER_SIZE];
+
+  stringfy_response(response, msg, MAX_BUFFER_SIZE);
 
   send(new_server_fd, msg, strlen(msg), 0);
 
+  free(response);
   close(new_server_fd);
   close(server_fd);
 
