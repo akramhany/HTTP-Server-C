@@ -1,6 +1,32 @@
 #include "defines.h"
-#include "response.h"
+#include "http.h"
+#include "parser.h"
 #include "utils.h"
+
+void handle_connection(int server_fd) {
+  /*
+   * 1. read request info.
+   * 2. parse request.
+   * 3. based on the request content do something.
+   * 4. construct the response.
+   * 5. send the response.
+   * */
+
+  const int MAX_REQUEST_INFO_SIZE = 4096;
+  char request_info[MAX_REQUEST_INFO_SIZE];
+
+  recv(server_fd, request_info, MAX_REQUEST_INFO_SIZE, 0);
+
+  // parse request.
+
+  Response *response = response_constructor("HTTP/1.1 200 OK", "", "");
+  char msg[MAX_BUFFER_SIZE];
+
+  response_stringify(response, msg, MAX_BUFFER_SIZE);
+  response_free(response);
+
+  send(server_fd, msg, strlen(msg), 0);
+}
 
 int main(int argc, char *argv[]) {
   int server_fd, client_addr_len, new_server_fd, port_no;
@@ -52,13 +78,7 @@ int main(int argc, char *argv[]) {
       accept(server_fd, (struct sockaddr *)&client_addr, &client_addr_len);
   printf("Client connected\n");
 
-  Response *response = response_constructor("HTTP/1.1 200 OK", "", "");
-  char msg[MAX_BUFFER_SIZE];
-
-  response_stringify(response, msg, MAX_BUFFER_SIZE);
-  response_free(response);
-
-  send(new_server_fd, msg, strlen(msg), 0);
+  handle_connection(new_server_fd);
 
   close(new_server_fd);
   close(server_fd);
