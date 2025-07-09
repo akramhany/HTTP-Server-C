@@ -55,11 +55,11 @@ int main(int argc, char *argv[]) {
   Response *response = response_constructor("HTTP/1.1 200 OK", "", "");
   char msg[MAX_BUFFER_SIZE];
 
-  stringfy_response(response, msg, MAX_BUFFER_SIZE);
+  response_stringify(response, msg, MAX_BUFFER_SIZE);
+  response_free(response);
 
   send(new_server_fd, msg, strlen(msg), 0);
 
-  free(response);
   close(new_server_fd);
   close(server_fd);
 

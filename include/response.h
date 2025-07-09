@@ -5,13 +5,14 @@
 
 typedef struct {
 
-  char status_line[MAX_BUFFER_SIZE];
-  char headers[MAX_BUFFER_SIZE];
-  char body[MAX_BUFFER_SIZE];
+  char *status_line;
+  char *headers;
+  char *body;
 
 } Response;
 
 Response *response_constructor(char *status_line, char *headers, char *body);
-void stringfy_response(Response *response, char buf[], int buffer_size);
+void response_stringify(Response *response, char buf[], int buffer_size);
+void response_free(Response *response);
 
 #endif
