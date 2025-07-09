@@ -14,8 +14,9 @@ set -e # Exit early if any commands fail
 # - Edit .codecrafters/compile.sh to change how your program compiles remotely
 (
   cd "$(dirname "$0")" # Ensure compile steps are run within the repository directory
-  cmake -B build -S .
+  cmake -B build -S . -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
   cmake --build ./build
+  mv build/compile_commands.json .
 )
 
 # Copied from .codecrafters/run.sh
