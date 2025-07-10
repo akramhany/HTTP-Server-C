@@ -17,15 +17,33 @@ void handle_connection(int server_fd) {
 
   recv(server_fd, request_info, MAX_REQUEST_INFO_SIZE, 0);
 
-  // parse request.
+  // Parse request.
+  Request *request = parse(request_info);
 
-  Response *response = response_constructor("HTTP/1.1 200 OK", "", "");
+  char *reason_phrase = NULL;
+  int status_code = -1;
+
+  if (strcmp(request->request_line->path, "/") == 0) {
+    status_code = 200;
+    reason_phrase = "OK";
+  } else {
+    status_code = 404;
+    reason_phrase = "Not Found";
+  }
+
+  StatusLine *status_line = status_line_constructor(
+      request->request_line->http_version, status_code, reason_phrase);
+
+  // Create response
+  Response *response = response_constructor(status_line, NULL, NULL);
+
   char msg[MAX_BUFFER_SIZE];
-
   response_stringify(response, msg, MAX_BUFFER_SIZE);
-  response_free(response);
 
   send(server_fd, msg, strlen(msg), 0);
+
+  request_free(request);
+  response_free(response);
 }
 
 int main(int argc, char *argv[]) {

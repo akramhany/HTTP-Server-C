@@ -53,8 +53,13 @@ void headers_free(Headers *headers) {
     return;
 
   free(headers->host);
+  headers->host = NULL;
+
   free(headers->user_agent);
+  headers->user_agent = NULL;
+
   free(headers->accept);
+  headers->accept = NULL;
 
   free(headers);
 }
@@ -89,8 +94,13 @@ void request_line_free(RequestLine *request_line) {
     return;
 
   free(request_line->method);
+  request_line->method = NULL;
+
   free(request_line->path);
+  request_line->path = NULL;
+
   free(request_line->http_version);
+  request_line->http_version = NULL;
 
   free(request_line);
 }
@@ -123,8 +133,13 @@ void request_free(Request *request) {
     return;
 
   request_line_free(request->request_line);
+  request->request_line = NULL;
+
   headers_free(request->headers);
+  request->headers = NULL;
+
   free(request->body);
+  request->body = NULL;
 
   free(request);
 }
@@ -170,7 +185,11 @@ void status_line_free(StatusLine *status_line) {
     return;
 
   free(status_line->http_version);
+  status_line->http_version = NULL;
+
   free(status_line->reason_phrase);
+  status_line->reason_phrase = NULL;
+
   free(status_line);
 }
 
@@ -221,8 +240,13 @@ void response_free(Response *response) {
   }
 
   status_line_free(response->status_line);
+  response->status_line = NULL;
+
   headers_free(response->headers);
+  response->headers = NULL;
+
   free(response->body);
+  response->body = NULL;
 
   free(response);
 }
