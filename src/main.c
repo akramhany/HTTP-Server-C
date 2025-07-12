@@ -41,22 +41,31 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  int connection_backlog = 5;
+  int connection_backlog = 10;
   if (listen(server_fd, connection_backlog) != 0) {
     printf("Listen failed: %s \n", strerror(errno));
     return 1;
   }
 
-  printf("Waiting for a client to connect...\n");
   client_addr_len = sizeof(client_addr);
 
-  new_server_fd =
-      accept(server_fd, (struct sockaddr *)&client_addr, &client_addr_len);
-  printf("Client connected\n");
+  while (1) {
+    printf("Waiting for a client to connect...\n");
+    new_server_fd =
+        accept(server_fd, (struct sockaddr *)&client_addr, &client_addr_len);
 
-  handle_connection(new_server_fd);
+    if (new_server_fd < 0) {
+      error("accept failed", -1);
+      continue;
+    }
 
-  close(new_server_fd);
+    printf("Client connected\n");
+
+    handle_connection(new_server_fd);
+
+    close(new_server_fd);
+  }
+
   close(server_fd);
 
   return 0;
