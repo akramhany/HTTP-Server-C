@@ -55,7 +55,9 @@ Response *handle_echo(Request *request) {
   StatusLine *status_line = status_line_constructor(
       request->request_line->http_version, 200, "OK");
 
-  Header *header_arr[] = {header_constructor("Content-Type", "text/plain"), header_constructor("Content-Length", content_length)};
+  Header **header_arr = malloc(2 * sizeof(Header *));
+  header_arr[0] = header_constructor("Content-Type", "text/plain");
+  header_arr[1] = header_constructor("Content-Length", content_length);
   Headers *headers = headers_constructor(header_arr, 2);
 
   return response_constructor(status_line, headers, request->request_line->path);
