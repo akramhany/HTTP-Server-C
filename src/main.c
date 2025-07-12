@@ -59,11 +59,24 @@ int main(int argc, char *argv[]) {
       continue;
     }
 
-    printf("Client connected\n");
+    pid_t pid = fork();
 
-    handle_connection(new_server_fd);
+    if (pid < 0) {
+        perror("fork failed");
+        close(new_server_fd);
+        continue;
+    }
 
-    close(new_server_fd);
+    if (pid == 0) {
+        // Child process
+        close(server_fd);  // child doesn't need the listening socket
+        handle_connection(new_server_fd);
+        close(new_server_fd);
+        exit(0);  // child exits after handling
+    } else {
+        // Parent process
+        close(new_server_fd);  // parent doesn't need the client socket
+    }
   }
 
   close(server_fd);
