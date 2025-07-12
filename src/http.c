@@ -266,3 +266,16 @@ void response_free(Response *response) {
 
   free(response);
 }
+
+char *get_header_value(Request *request, char *header) {
+  Header **headers = request->headers->headers;
+  int headers_size = request->headers->headers_count;
+
+  for (int i = 0; i < headers_size; i++) {
+    if (strcmp(headers[i]->key, header) == 0) {
+      return headers[i]->value;
+    }
+  }
+
+  return NULL;
+}

@@ -36,9 +36,12 @@ void handle_connection(int server_fd) {
 Response *router(Request *request) {
   const char *default_path = "/";
   const char *echo_path = "/echo/";
+  const char *user_agent_path = "/user-agent";
 
   if (strncmp(echo_path, request->request_line->path, strlen(echo_path)) == 0) {
     return handle_echo(request);
+  } else if (strncmp(user_agent_path, request->request_line->path, strlen(user_agent_path)) == 0) {
+    return handle_user_agent(request);
   } else if (strcmp(default_path, request->request_line->path) == 0) {
     return handle_default_path(request);
   }
@@ -61,6 +64,26 @@ Response *handle_echo(Request *request) {
   Headers *headers = headers_constructor(header_arr, 2);
 
   return response_constructor(status_line, headers, request->request_line->path);
+}
+
+Response *handle_user_agent(Request *request) {
+  char *value = get_header_value(request, "User-Agent");
+  if (!value) {
+    error("Couldn't find header!\n", -1);
+  }
+
+  char content_length[16];
+  sprintf(content_length, "%ld", strlen(value));
+
+  StatusLine *status_line = status_line_constructor(
+      request->request_line->http_version, 200, "OK");
+
+  Header **header_arr = malloc(2 * sizeof(Header *));
+  header_arr[0] = header_constructor("Content-Type", "text/plain");
+  header_arr[1] = header_constructor("Content-Length", content_length);
+  Headers *headers = headers_constructor(header_arr, 2);
+
+  return response_constructor(status_line, headers, value);
 }
 
 Response *handle_invalid_path(Request *request) {

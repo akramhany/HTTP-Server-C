@@ -79,4 +79,10 @@ Response *response_constructor(StatusLine *status_line, Headers *headers,
 void response_stringify(Response *response, char buf[], int buffer_size);
 void response_free(Response *response);
 
+//////////////////////////////////////////////////////
+/////////////////// HTTP Helpers /////////////////////
+//////////////////////////////////////////////////////
+
+char *get_header_value(Request *request, char *header);
+
 #endif
