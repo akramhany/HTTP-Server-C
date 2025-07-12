@@ -49,7 +49,7 @@ FileContent *read_file(const char *file_path) {
   }
 
   fseek(fp, 0, SEEK_END); // move pointer to end of file
-  int file_size = ftell(fp) - 1;    // get pointer position as it will be file size in bytes, minus one byte for EOF (probably)
+  int file_size = ftell(fp);    // get pointer position as it will be file size in bytes, minus one byte for EOF (probably)
 
   rewind(fp);     // move pointer back to begining of file
 
@@ -66,4 +66,21 @@ FileContent *read_file(const char *file_path) {
   ptr->file_size = file_size;
 
   return ptr;
+}
+
+void write_file(const char *dir_path, const char *file_name, const char *data) {
+  char file_path[MAX_BUFFER_SIZE];
+  snprintf(file_path, sizeof(file_path), "%s%s", dir_path, file_name);
+
+  printf("file path: %s\n", file_path);
+  printf("file data: %s\n", data);
+
+  FILE *fp = fopen(file_path, "w");
+  if (!fp) {
+    error("Couldn't create file\n", -1);
+  }
+
+  fprintf(fp, "%s", data);
+
+  fclose(fp);
 }

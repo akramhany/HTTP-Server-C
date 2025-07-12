@@ -18,7 +18,7 @@ Request *parse(char *request_info) {
   Headers *headers = parse_headers(&tokens[1], tokens_count - 2);
 
   // Parse body
-  char *body = tokens[tokens_count - 1];
+  char *body = tokens[tokens_count - 2];
 
   // Create and return request
   Request *request = request_constructor(request_line, headers, body);

@@ -24,4 +24,6 @@ int file_exists_in_dir(const char *dir_path, const char *file_name);
 // The created data pointer should be freed after used (not freed inside the function)
 FileContent *read_file(const char *file_path);
 
+void write_file(const char *dir_path, const char *file_name, const char *data);
+
 #endif

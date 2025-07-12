@@ -44,7 +44,7 @@ Response *router(Request *request, const char *dir_path) {
   } else if (strncmp(user_agent_path, request->request_line->path, strlen(user_agent_path)) == 0) {
     return handle_user_agent(request);
   } else if (strncmp(files_path, request->request_line->path, strlen(files_path)) == 0) {
-    return handle_files_path(request, dir_path);
+    return handle_files(request, dir_path);
   } else if (strcmp(default_path, request->request_line->path) == 0) {
     return handle_default_path(request);
   }
@@ -89,14 +89,40 @@ Response *handle_user_agent(Request *request) {
   return response_constructor(status_line, headers, value);
 }
 
-Response *handle_files_path(Request *request, const char *dir_path) {
+Response *handle_files(Request *request, const char *dir_path) {
   shift_string_left(&(request->request_line->path), "/files/");
 
-  const char *file_name = request->request_line->path;
-  char file_path[MAX_BUFFER_SIZE];
+  if (strcmp(request->request_line->method, "GET") == 0) {    // handle get request
+    return handle_files_get(request, dir_path, request->request_line->path);
+  } else {    // handle post request
+    return handle_files_post(request, dir_path,request->request_line->path );
+  }
+}
 
-  strcpy(file_path, dir_path);
-  strcat(file_path, file_name);
+Response *handle_invalid_path(Request *request) {
+  int status_code = 404;
+  char *reason_phrase = "Not Found";
+
+  StatusLine *status_line = status_line_constructor(
+      request->request_line->http_version, status_code, reason_phrase);
+
+  return response_constructor(status_line, NULL, NULL);
+}
+
+Response *handle_default_path(Request *request) {
+  int status_code = 200;
+  char *reason_phrase = "OK";
+
+  StatusLine *status_line = status_line_constructor(
+      request->request_line->http_version, status_code, reason_phrase);
+
+  return response_constructor(status_line, NULL, NULL);
+}
+
+Response *handle_files_get(Request *request, const char *dir_path,
+                           const char *file_name) {
+  char file_path[MAX_BUFFER_SIZE];
+  snprintf(file_path, sizeof(file_path), "%s%s", dir_path, file_name);
 
   if (file_exists_in_dir(dir_path, file_name) != 1) {
     return handle_invalid_path(request);
@@ -118,22 +144,12 @@ Response *handle_files_path(Request *request, const char *dir_path) {
   return response_constructor(status_line, headers, file_content->data);
 }
 
-Response *handle_invalid_path(Request *request) {
-  int status_code = 404;
-  char *reason_phrase = "Not Found";
+Response *handle_files_post(Request *request, const char *dir_path,
+                            const char *file_name) {
+  write_file(dir_path, file_name, request->body);
 
   StatusLine *status_line = status_line_constructor(
-      request->request_line->http_version, status_code, reason_phrase);
-
-  return response_constructor(status_line, NULL, NULL);
-}
-
-Response *handle_default_path(Request *request) {
-  int status_code = 200;
-  char *reason_phrase = "OK";
-
-  StatusLine *status_line = status_line_constructor(
-      request->request_line->http_version, status_code, reason_phrase);
+      request->request_line->http_version, 201, "Created");
 
   return response_constructor(status_line, NULL, NULL);
 }
