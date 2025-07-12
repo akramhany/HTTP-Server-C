@@ -72,14 +72,12 @@ void write_file(const char *dir_path, const char *file_name, const char *data) {
   char file_path[MAX_BUFFER_SIZE];
   snprintf(file_path, sizeof(file_path), "%s%s", dir_path, file_name);
 
-  printf("file path: %s\n", file_path);
-  printf("file data: %s\n", data);
-
   FILE *fp = fopen(file_path, "w");
   if (!fp) {
     error("Couldn't create file\n", -1);
   }
 
+  printf("data: %s\n", data);
   fprintf(fp, "%s", data);
 
   fclose(fp);

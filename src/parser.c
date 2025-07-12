@@ -2,6 +2,17 @@
 #include "defines.h"
 
 Request *parse(char *request_info) {
+  char *header_part = strstr(request_info, "\r\n\r\n");
+  char *body_part = NULL;
+
+  if (header_part) {
+    *header_part = '\0';
+    body_part = header_part + 4;
+    header_part = request_info;
+  } else {
+    return NULL;
+  }
+
   // Parse request_line
   char *tokens[MAX_BUFFER_SIZE];
   int tokens_count = 0;
@@ -18,7 +29,7 @@ Request *parse(char *request_info) {
   Headers *headers = parse_headers(&tokens[1], tokens_count - 2);
 
   // Parse body
-  char *body = tokens[tokens_count - 2];
+  char *body = body_part;
 
   // Create and return request
   Request *request = request_constructor(request_line, headers, body);
