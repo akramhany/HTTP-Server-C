@@ -34,10 +34,13 @@ void handle_connection(int server_fd) {
 }
 
 Response *router(Request *request) {
+  const char *default_path = "/";
   const char *echo_path = "/echo/";
 
   if (strncmp(echo_path, request->request_line->path, strlen(echo_path)) == 0) {
     return handle_echo(request);
+  } else if (strcmp(default_path, request->request_line->path) == 0) {
+    return handle_default_path(request);
   }
 
   return handle_invalid_path(request);
@@ -61,6 +64,16 @@ Response *handle_echo(Request *request) {
 Response *handle_invalid_path(Request *request) {
   int status_code = 404;
   char *reason_phrase = "Not Found";
+
+  StatusLine *status_line = status_line_constructor(
+      request->request_line->http_version, status_code, reason_phrase);
+
+  return response_constructor(status_line, NULL, NULL);
+}
+
+Response *handle_default_path(Request *request) {
+  int status_code = 200;
+  char *reason_phrase = "OK";
 
   StatusLine *status_line = status_line_constructor(
       request->request_line->http_version, status_code, reason_phrase);
