@@ -7,10 +7,14 @@
 int main(int argc, char *argv[]) {
   int server_fd, client_addr_len, new_server_fd, port_no;
   struct sockaddr_in client_addr;
+  char *dir_path = NULL;
 
-  if (argc != 2) {
-    error("Usage: ./program port_number\n", 1);
+  if (argc != 4) {
+    error("Usage: ./program --directory dir_path port_number\n", 1);
   }
+
+  port_no = atoi(argv[3]);
+  dir_path = argv[2];
 
   server_fd = socket(AF_INET, SOCK_STREAM, 0);
   if (server_fd == -1) {
@@ -27,8 +31,6 @@ int main(int argc, char *argv[]) {
     printf("SO_REUSEADDR failed: %s \n", strerror(errno));
     return 1;
   }
-
-  port_no = atoi(argv[1]);
 
   struct sockaddr_in serv_addr = {
       .sin_family = AF_INET,
@@ -70,7 +72,7 @@ int main(int argc, char *argv[]) {
     if (pid == 0) {
         // Child process
         close(server_fd);  // child doesn't need the listening socket
-        handle_connection(new_server_fd);
+        handle_connection(new_server_fd, dir_path);
         close(new_server_fd);
         exit(0);  // child exits after handling
     } else {
