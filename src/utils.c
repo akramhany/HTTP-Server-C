@@ -77,7 +77,6 @@ void write_file(const char *dir_path, const char *file_name, const char *data) {
     error("Couldn't create file\n", -1);
   }
 
-  printf("data: %s\n", data);
   fprintf(fp, "%s", data);
 
   fclose(fp);
