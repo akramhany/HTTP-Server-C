@@ -56,7 +56,6 @@ Headers *headers_constructor(Header **header_arr, int headers_count) {
 
 void headers_stringify(Headers *headers, char buf[]) {
   int size = headers->headers_count;
-  buf[0] = '\0';
 
   for (int i = 0; i < size; i++) {
     char temp_buf[MAX_BUFFER_SIZE];

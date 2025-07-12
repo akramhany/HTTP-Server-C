@@ -2,49 +2,7 @@
 #include "http.h"
 #include "parser.h"
 #include "utils.h"
-
-void handle_connection(int server_fd) {
-  /*
-   * 1. read request info.
-   * 2. parse request.
-   * 3. based on the request content do something.
-   * 4. construct the response.
-   * 5. send the response.
-   * */
-
-  const int MAX_REQUEST_INFO_SIZE = 4096;
-  char request_info[MAX_REQUEST_INFO_SIZE];
-
-  recv(server_fd, request_info, MAX_REQUEST_INFO_SIZE, 0);
-
-  // Parse request.
-  Request *request = parse(request_info);
-
-  char *reason_phrase = NULL;
-  int status_code = -1;
-
-  if (strcmp(request->request_line->path, "/") == 0) {
-    status_code = 200;
-    reason_phrase = "OK";
-  } else {
-    status_code = 404;
-    reason_phrase = "Not Found";
-  }
-
-  StatusLine *status_line = status_line_constructor(
-      request->request_line->http_version, status_code, reason_phrase);
-
-  // Create response
-  Response *response = response_constructor(status_line, NULL, NULL);
-
-  char msg[MAX_BUFFER_SIZE];
-  response_stringify(response, msg, MAX_BUFFER_SIZE);
-
-  send(server_fd, msg, strlen(msg), 0);
-
-  request_free(request);
-  response_free(response);
-}
+#include "handler.h"
 
 int main(int argc, char *argv[]) {
   int server_fd, client_addr_len, new_server_fd, port_no;

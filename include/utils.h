@@ -10,4 +10,6 @@
  */
 void error(const char *msg, int error_status);
 
+void shift_string_left(char **dest, char *src);
+
 #endif
