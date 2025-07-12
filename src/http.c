@@ -2,48 +2,67 @@
 #include "defines.h"
 #include "utils.h"
 
-Headers *headers_constructor(char *host, char *user_agent, char *accept) {
+Header *header_constructor(char *key, char *value) {
+  Header *header = malloc(sizeof(Header));
+
+  header->key = NULL;
+  if (key) {
+    header->key = malloc(strlen(key) + 1);
+    strcpy(header->key, key);
+  }
+
+  header->value = NULL;
+  if (value) {
+    header->value = malloc(strlen(value) + 1);
+    strcpy(header->value, value);
+  }
+
+  return header;
+}
+
+void header_stringify(Header *header, char buf[]) {
+  if (!header)
+    return;
+
+  buf[0] = '\0';
+
+  strcat(buf, header->key);
+  strcat(buf, ": ");
+  strcat(buf, header->value);
+}
+
+void header_free(Header *header) {
+  if (!header)
+    return;
+
+  free(header->key);
+  free(header->value);
+
+  free(header);
+}
+
+Headers *headers_constructor(Header **header_arr, int headers_count) {
   Headers *headers = malloc(sizeof(Headers));
 
-  headers->host = NULL;
-  if (host) {
-    headers->host = malloc(strlen(host) + 1);
-    strcpy(headers->host, host);
+  headers->headers = NULL;
+  if (header_arr) {
+    headers->headers = header_arr;
   }
 
-  headers->user_agent = NULL;
-  if (user_agent) {
-    headers->user_agent = malloc(strlen(user_agent) + 1);
-    strcpy(headers->user_agent, user_agent);
-  }
-
-  headers->accept = NULL;
-  if (accept) {
-    headers->accept = malloc(strlen(accept) + 1);
-    strcpy(headers->accept, accept);
-  }
+  headers->headers_count = headers_count;
 
   return headers;
 }
 
 void headers_stringify(Headers *headers, char buf[]) {
+  int size = headers->headers_count;
   buf[0] = '\0';
 
-  if (headers->host) {
-    strcat(buf, "Host: ");
-    strcat(buf, headers->host);
-    strcat(buf, CRLF);
-  }
+  for (int i = 0; i < size; i++) {
+    char temp_buf[MAX_BUFFER_SIZE];
 
-  if (headers->user_agent) {
-    strcat(buf, "User-Agent: ");
-    strcat(buf, headers->user_agent);
-    strcat(buf, CRLF);
-  }
-
-  if (headers->accept) {
-    strcat(buf, "Accept: ");
-    strcat(buf, headers->accept);
+    header_stringify(headers->headers[i], temp_buf);
+    strcat(buf, temp_buf);
     strcat(buf, CRLF);
   }
 }
@@ -52,15 +71,13 @@ void headers_free(Headers *headers) {
   if (!headers)
     return;
 
-  free(headers->host);
-  headers->host = NULL;
+  int size = headers->headers_count;
 
-  free(headers->user_agent);
-  headers->user_agent = NULL;
+  for (int i = 0; i < size; i++) {
+    header_free(headers->headers[i]);
+  }
 
-  free(headers->accept);
-  headers->accept = NULL;
-
+  free(headers->headers);
   free(headers);
 }
 

@@ -4,13 +4,22 @@
 #include "constants.h"
 
 typedef struct {
-  char *host;
-  char *user_agent;
-  char *accept;
+  char *key;
+  char *value;
+
+} Header;
+
+Header *header_constructor(char *key, char *value);
+void header_stringify(Header *header, char buf[]);
+void header_free(Header *header);
+
+typedef struct {
+  Header **headers;
+  int headers_count;
 
 } Headers;
 
-Headers *headers_constructor(char *host, char *user_agent, char *accept);
+Headers *headers_constructor(Header **header_arr, int headers_count);
 void headers_stringify(Headers *headers, char buf[]);
 void headers_free(Headers *headers);
 

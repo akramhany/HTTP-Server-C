@@ -50,20 +50,16 @@ RequestLine *parse_request_line(char *request_line) {
 
 Headers *parse_headers(char *headers[], int size) {
   char *host = NULL, *user_agent = NULL, *accept = NULL;
-  char *delim = " ";
+  char *delim = ": ";
+  Header **header_arr = malloc(size * sizeof(Header *));
 
   for (int i = 0; i < size; i++) {
     char *key = strtok(headers[i], delim);
     char *value = strtok(NULL, delim);
+    Header *header = header_constructor(key, value);
 
-    if (strcmp(key, "Host:") == 0) {
-      host = value;
-    } else if (strcmp(key, "User-Agent:") == 0) {
-      user_agent = value;
-    } else if (strcmp(key, "Accept:") == 0) {
-      accept = value;
-    }
+    header_arr[i] = header;
   }
 
-  return headers_constructor(host, user_agent, accept);
+  return headers_constructor(header_arr, size);
 }
