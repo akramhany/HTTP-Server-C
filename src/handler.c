@@ -154,7 +154,7 @@ Response *send_response_with_headers(Request *request, int content_length,
   Header **header_arr = malloc(header_arr_size * sizeof(Header *));
   header_arr[0] = header_constructor("Content-Type", content_type);
   header_arr[1] = header_constructor("Content-Length", content_length_str);
-  if (header_arr_size > 3) {
+  if (header_arr_size == 3) {
     header_arr[2] = header_constructor("Content-Encoding", "gzip");
   }
   Headers *headers = headers_constructor(header_arr, header_arr_size);
