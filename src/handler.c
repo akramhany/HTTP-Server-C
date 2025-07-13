@@ -75,28 +75,9 @@ Response *handle_user_agent(Request *request) {
     error("Couldn't find header!\n", -1);
   }
 
-  char content_length[16];
-  sprintf(content_length, "%ld", strlen(value));
-
-  StatusLine *status_line = status_line_constructor(
-      request->request_line->http_version, 200, "OK");
-
-  Header **header_arr = malloc(2 * sizeof(Header *));
-  header_arr[0] = header_constructor("Content-Type", "text/plain");
-  header_arr[1] = header_constructor("Content-Length", content_length);
-  Headers *headers = headers_constructor(header_arr, 2);
-
-  return response_constructor(status_line, headers, value);
-}
-
-Response *handle_files(Request *request, const char *dir_path) {
-  shift_string_left(&(request->request_line->path), "/files/");
-
-  if (strcmp(request->request_line->method, "GET") == 0) {    // handle get request
-    return handle_files_get(request, dir_path, request->request_line->path);
-  } else {    // handle post request
-    return handle_files_post(request, dir_path,request->request_line->path );
-  }
+  return send_response_with_headers(request, strlen(value),
+                                    200, "OK",
+                                    "text/plain", value);
 }
 
 Response *handle_invalid_path(Request *request) {
@@ -119,6 +100,20 @@ Response *handle_default_path(Request *request) {
   return response_constructor(status_line, NULL, NULL);
 }
 
+////////////////////////////////////////////////////
+///////////////////// FILES ////////////////////////
+////////////////////////////////////////////////////
+
+Response *handle_files(Request *request, const char *dir_path) {
+  shift_string_left(&(request->request_line->path), "/files/");
+
+  if (strcmp(request->request_line->method, "GET") == 0) {    // handle get request
+    return handle_files_get(request, dir_path, request->request_line->path);
+  } else {    // handle post request
+    return handle_files_post(request, dir_path,request->request_line->path );
+  }
+}
+
 Response *handle_files_get(Request *request, const char *dir_path,
                            const char *file_name) {
   char file_path[MAX_BUFFER_SIZE];
@@ -130,18 +125,9 @@ Response *handle_files_get(Request *request, const char *dir_path,
 
   FileContent *file_content = read_file(file_path);
 
-  char content_length[16];
-  sprintf(content_length, "%d", file_content->file_size);
-
-  StatusLine *status_line = status_line_constructor(
-      request->request_line->http_version, 200, "OK");
-
-  Header **header_arr = malloc(2 * sizeof(Header *));
-  header_arr[0] = header_constructor("Content-Type", "application/octet-stream");
-  header_arr[1] = header_constructor("Content-Length", content_length);
-  Headers *headers = headers_constructor(header_arr, 2);
-
-  return response_constructor(status_line, headers, file_content->data);
+  return send_response_with_headers(request, file_content->file_size,
+                                    200, "OK",
+                                    "application/octet-stream", file_content->data);
 }
 
 Response *handle_files_post(Request *request, const char *dir_path,
@@ -152,4 +138,25 @@ Response *handle_files_post(Request *request, const char *dir_path,
       request->request_line->http_version, 201, "Created");
 
   return response_constructor(status_line, NULL, NULL);
+}
+
+
+////////////////////////////////////////////////////
+////////////////// GENERAL UTILS ///////////////////
+////////////////////////////////////////////////////
+Response *send_response_with_headers(Request *request, int content_length,
+                                     int status_code, char *reason_phrase,
+                                     char *content_type, char *body) {
+  char content_length_str[16];
+  sprintf(content_length_str, "%d", content_length);
+
+  StatusLine *status_line = status_line_constructor(
+      request->request_line->http_version, status_code, reason_phrase);
+
+  Header **header_arr = malloc(2 * sizeof(Header *));
+  header_arr[0] = header_constructor("Content-Type", content_type);
+  header_arr[1] = header_constructor("Content-Length", content_length_str);
+  Headers *headers = headers_constructor(header_arr, 2);
+
+  return response_constructor(status_line, headers, body);
 }
