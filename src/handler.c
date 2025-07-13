@@ -147,7 +147,7 @@ Response *send_response_with_headers(Request *request, int content_length,
   char *compression = get_header_value(request, "Accept-Encoding");
   int header_arr_size = 2;
 
-  if (strstr(compression, "gzip") != NULL) {
+  if (compression && strstr(compression, "gzip") != NULL) {
     header_arr_size = 3;
   }
 
