@@ -65,8 +65,14 @@ Headers *parse_headers(char *headers[], int size) {
   Header **header_arr = malloc(size * sizeof(Header *));
 
   for (int i = 0; i < size; i++) {
-    char *key = strtok(headers[i], delim);
-    char *value = strtok(NULL, delim);
+    char *ptr = strstr(headers[i], delim);
+    ptr[0] = '\0';
+
+    char *key = headers[i];
+    char *value = ptr + 2;      // skip ": " chars
+
+    printf("key: %s\n", key);
+    printf("value: %s\n", value);
     Header *header = header_constructor(key, value);
 
     header_arr[i] = header;
