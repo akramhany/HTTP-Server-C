@@ -1,6 +1,10 @@
 #ifndef UTILS
 #define UTILS
 
+#include "constants.h"
+#include "defines.h"
+#include <zlib.h>
+
 typedef struct {
   char *data;
   int file_size;
@@ -25,5 +29,7 @@ int file_exists_in_dir(const char *dir_path, const char *file_name);
 FileContent *read_file(const char *file_path);
 
 void write_file(const char *dir_path, const char *file_name, const char *data);
+
+void gzip_compress(char *input, size_t input_len, char *output, size_t *output_len);
 
 #endif

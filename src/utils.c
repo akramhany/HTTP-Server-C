@@ -1,6 +1,4 @@
 #include "utils.h"
-#include "constants.h"
-#include "defines.h"
 
 void error(const char *msg, int error_status) {
   fprintf(stderr, "%s", msg);
@@ -80,4 +78,26 @@ void write_file(const char *dir_path, const char *file_name, const char *data) {
   fprintf(fp, "%s", data);
 
   fclose(fp);
+}
+
+void gzip_compress(char *input, size_t input_len, char *output, size_t *output_len) {
+  z_stream stream;
+  memset(&stream, 0, sizeof(stream));
+
+  if (deflateInit2(&stream, Z_BEST_COMPRESSION, Z_DEFLATED, 15 + 16, 8, Z_DEFAULT_STRATEGY) != Z_OK) {
+    error("Compression failed!\n", -1);
+  }
+
+  stream.next_in = (Bytef *)input;
+  stream.avail_in = input_len;
+  stream.next_out = (Bytef *)output;
+  stream.avail_out = *output_len;
+
+  int ret = deflate(&stream, Z_FINISH);
+  if (ret != Z_STREAM_END) {
+    deflateEnd(&stream);
+    error("Compression failed!", -2);
+  }
+
+  *output_len = stream.total_out;
 }

@@ -71,8 +71,6 @@ Headers *parse_headers(char *headers[], int size) {
     char *key = headers[i];
     char *value = ptr + 2;      // skip ": " chars
 
-    printf("key: %s\n", key);
-    printf("value: %s\n", value);
     Header *header = header_constructor(key, value);
 
     header_arr[i] = header;

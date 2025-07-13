@@ -139,7 +139,6 @@ Response *send_response_with_headers(Request *request, int content_length,
                                      int status_code, char *reason_phrase,
                                      char *content_type, char *body) {
   char content_length_str[16];
-  sprintf(content_length_str, "%d", content_length);
 
   StatusLine *status_line = status_line_constructor(
       request->request_line->http_version, status_code, reason_phrase);
@@ -153,11 +152,26 @@ Response *send_response_with_headers(Request *request, int content_length,
 
   Header **header_arr = malloc(header_arr_size * sizeof(Header *));
   header_arr[0] = header_constructor("Content-Type", content_type);
-  header_arr[1] = header_constructor("Content-Length", content_length_str);
-  if (header_arr_size == 3) {
-    header_arr[2] = header_constructor("Content-Encoding", "gzip");
-  }
-  Headers *headers = headers_constructor(header_arr, header_arr_size);
 
-  return response_constructor(status_line, headers, body);
+  // If no compression is required, return normal response
+  if (header_arr_size == 2) {
+    sprintf(content_length_str, "%d", content_length);
+    header_arr[1] = header_constructor("Content-Length", content_length_str);
+    Headers *headers = headers_constructor(header_arr, header_arr_size);
+    return response_constructor(status_line, headers, body);
+  }
+
+  header_arr[1] = header_constructor("Content-Encoding", "gzip");
+
+  const int MAX_COMPRESSED_LEN = 4096;
+  char compressed_body[MAX_COMPRESSED_LEN];
+  content_length = MAX_COMPRESSED_LEN;
+
+  gzip_compress(body, strlen(body), compressed_body, (size_t *)&content_length);
+
+  sprintf(content_length_str, "%d", content_length);
+  header_arr[2] = header_constructor("Content-Length", content_length_str);
+
+  Headers *headers = headers_constructor(header_arr, header_arr_size);
+  return response_constructor(status_line, headers, compressed_body);
 }
