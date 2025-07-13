@@ -55,18 +55,9 @@ Response *router(Request *request, const char *dir_path) {
 Response *handle_echo(Request *request) {
   shift_string_left(&(request->request_line->path), "/echo/");
 
-  char content_length[16];
-  sprintf(content_length, "%ld", strlen(request->request_line->path));
-
-  StatusLine *status_line = status_line_constructor(
-      request->request_line->http_version, 200, "OK");
-
-  Header **header_arr = malloc(2 * sizeof(Header *));
-  header_arr[0] = header_constructor("Content-Type", "text/plain");
-  header_arr[1] = header_constructor("Content-Length", content_length);
-  Headers *headers = headers_constructor(header_arr, 2);
-
-  return response_constructor(status_line, headers, request->request_line->path);
+  return send_response_with_headers(request, strlen(request->request_line->path),
+                                    200, "OK",
+                                    "text/plain", request->request_line->path);
 }
 
 Response *handle_user_agent(Request *request) {
@@ -100,10 +91,10 @@ Response *handle_default_path(Request *request) {
   return response_constructor(status_line, NULL, NULL);
 }
 
+
 ////////////////////////////////////////////////////
 ///////////////////// FILES ////////////////////////
 ////////////////////////////////////////////////////
-
 Response *handle_files(Request *request, const char *dir_path) {
   shift_string_left(&(request->request_line->path), "/files/");
 
@@ -153,10 +144,20 @@ Response *send_response_with_headers(Request *request, int content_length,
   StatusLine *status_line = status_line_constructor(
       request->request_line->http_version, status_code, reason_phrase);
 
-  Header **header_arr = malloc(2 * sizeof(Header *));
+  char *compression = get_header_value(request, "Accept-Encoding");
+  int header_arr_size = 2;
+
+  if (strstr(compression, "gzip") != NULL) {
+    header_arr_size = 3;
+  }
+
+  Header **header_arr = malloc(header_arr_size * sizeof(Header *));
   header_arr[0] = header_constructor("Content-Type", content_type);
   header_arr[1] = header_constructor("Content-Length", content_length_str);
-  Headers *headers = headers_constructor(header_arr, 2);
+  if (header_arr_size > 3) {
+    header_arr[2] = header_constructor("Content-Encoding", "gzip");
+  }
+  Headers *headers = headers_constructor(header_arr, header_arr_size);
 
   return response_constructor(status_line, headers, body);
 }
