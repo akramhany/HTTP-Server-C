@@ -25,9 +25,9 @@ void handle_connection(int server_fd, const char *dir_path) {
   Response *response = router(request, dir_path);
 
   char msg[MAX_RESPONSE_STR_SIZE];
-  response_stringify(response, msg, MAX_RESPONSE_STR_SIZE);
+  int msg_len = response_stringify(response, msg, MAX_RESPONSE_STR_SIZE);
 
-  send(server_fd, msg, strlen(msg), 0);
+  send(server_fd, msg, msg_len, 0);
 
   request_free(request);
   response_free(response);
@@ -78,7 +78,7 @@ Response *handle_invalid_path(Request *request) {
   StatusLine *status_line = status_line_constructor(
       request->request_line->http_version, status_code, reason_phrase);
 
-  return response_constructor(status_line, NULL, NULL);
+  return response_constructor(status_line, NULL, NULL, 0);
 }
 
 Response *handle_default_path(Request *request) {
@@ -88,7 +88,7 @@ Response *handle_default_path(Request *request) {
   StatusLine *status_line = status_line_constructor(
       request->request_line->http_version, status_code, reason_phrase);
 
-  return response_constructor(status_line, NULL, NULL);
+  return response_constructor(status_line, NULL, NULL, 0);
 }
 
 
@@ -128,7 +128,7 @@ Response *handle_files_post(Request *request, const char *dir_path,
   StatusLine *status_line = status_line_constructor(
       request->request_line->http_version, 201, "Created");
 
-  return response_constructor(status_line, NULL, NULL);
+  return response_constructor(status_line, NULL, NULL, 0);
 }
 
 
@@ -158,7 +158,7 @@ Response *send_response_with_headers(Request *request, int content_length,
     sprintf(content_length_str, "%d", content_length);
     header_arr[1] = header_constructor("Content-Length", content_length_str);
     Headers *headers = headers_constructor(header_arr, header_arr_size);
-    return response_constructor(status_line, headers, body);
+    return response_constructor(status_line, headers, body, strlen(body) + 1);
   }
 
   header_arr[1] = header_constructor("Content-Encoding", "gzip");
@@ -173,5 +173,5 @@ Response *send_response_with_headers(Request *request, int content_length,
   header_arr[2] = header_constructor("Content-Length", content_length_str);
 
   Headers *headers = headers_constructor(header_arr, header_arr_size);
-  return response_constructor(status_line, headers, compressed_body);
+  return response_constructor(status_line, headers, compressed_body, content_length);
 }

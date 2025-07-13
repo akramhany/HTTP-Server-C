@@ -71,12 +71,13 @@ typedef struct {
   StatusLine *status_line;
   Headers *headers;
   char *body;
+  int body_len;
 
 } Response;
 
 Response *response_constructor(StatusLine *status_line, Headers *headers,
-                               char *body);
-void response_stringify(Response *response, char buf[], int buffer_size);
+                               char *body, int body_len);
+int response_stringify(Response *response, char buf[], int buffer_size);
 void response_free(Response *response);
 
 //////////////////////////////////////////////////////

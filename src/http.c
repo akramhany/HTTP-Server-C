@@ -210,7 +210,7 @@ void status_line_free(StatusLine *status_line) {
 }
 
 Response *response_constructor(StatusLine *status_line, Headers *headers,
-                               char *body) {
+                               char *body, int body_len) {
   Response *response = malloc(sizeof(Response));
 
   response->status_line = NULL;
@@ -225,15 +225,18 @@ Response *response_constructor(StatusLine *status_line, Headers *headers,
 
   response->body = NULL;
   if (body) {
-    response->body = malloc(strlen(body) + 1);
-    strcpy(response->body, body);
+    response->body = malloc(body_len);
+    memcpy(response->body, body, body_len);
   }
+
+  response->body_len = body_len;
 
   return response;
 }
 
-void response_stringify(Response *response, char buf[], int buffer_size) {
+int response_stringify(Response *response, char buf[], int buffer_size) {
   buf[0] = '\0';
+  int response_size = 0;
 
   if (response->status_line) {
     status_line_stringify(response->status_line, buf);
@@ -245,9 +248,14 @@ void response_stringify(Response *response, char buf[], int buffer_size) {
   }
   strcat(buf, CRLF);
 
+  response_size = strlen(buf);
+
   if (response->body) {
-    strcat(buf, response->body);
+    memcpy(buf + response_size, response->body, response->body_len);
+    response_size += response->body_len;
   }
+
+  return response_size;
 }
 
 void response_free(Response *response) {
