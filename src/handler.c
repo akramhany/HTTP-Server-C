@@ -12,25 +12,42 @@ void handle_connection(int server_fd, const char *dir_path) {
    * 5. send the response.
    * */
 
+  setbuf(stdout, NULL);  // disable stdout buffering
+
   const int MAX_REQUEST_INFO_SIZE = 4096;
   const int MAX_RESPONSE_STR_SIZE = 4096;
   char request_info[MAX_REQUEST_INFO_SIZE];
+  bool close_connection = false;
 
-  recv(server_fd, request_info, MAX_REQUEST_INFO_SIZE, 0);
+  while (1) {
+    if (close_connection) {
+      break;
+    }
 
-  // Parse request.
-  Request *request = parse(request_info);
+    recv(server_fd, request_info, MAX_REQUEST_INFO_SIZE, 0);
 
-  // Create response
-  Response *response = router(request, dir_path);
+    printf("recv: %s\n", request_info);
 
-  char msg[MAX_RESPONSE_STR_SIZE];
-  int msg_len = response_stringify(response, msg, MAX_RESPONSE_STR_SIZE);
+    // Parse request.
+    Request *request = parse(request_info);
 
-  send(server_fd, msg, msg_len, 0);
+    char *connection_header = get_header_value(request, "Connection");
+    if (connection_header && strcmp(connection_header, "close") == 0) {
+      close_connection = true;
+    }
 
-  request_free(request);
-  response_free(response);
+    // Create response
+    Response *response = router(request, dir_path);
+
+    char msg[MAX_RESPONSE_STR_SIZE];
+    int msg_len = response_stringify(response, msg, MAX_RESPONSE_STR_SIZE);
+    printf("message sent: %s\n", msg);
+
+    send(server_fd, msg, msg_len, 0);
+
+    request_free(request);
+    response_free(response);
+  }
 }
 
 Response *router(Request *request, const char *dir_path) {
